@@ -15978,6 +15978,7 @@ int wolfSSL_set_compression(WOLFSSL* ssl)
     {
         SOCKET_T sfd = SOCKET_INVALID;
         WOLFSSL_ENTER("wolfSSL_BIO_do_connect");
+        WOFLSSL_BIO *ssl = b;
 
         if (!b) {
             WOLFSSL_ENTER("Bad parameter");
@@ -15999,6 +16000,17 @@ int wolfSSL_set_compression(WOLFSSL* ssl)
 
         b->num = sfd;
         b->shutdown = BIO_CLOSE;
+
+        /* Now that WOLFSSL_BIO_SOCKET has the proper socket, tell the
+         * ssl context about it.
+         */
+        while (ssl && ssl->type != WOLFSSL_BIO_SSL)
+           ssl = ssl->next;
+
+        if (ssl && ssl->ptr) {
+           wolfSSL_set_fd(ssl->ptr, sfd);
+        }
+
         return WOLFSSL_SUCCESS;
     }
 #endif /* HAVE_HTTP_CLIENT */
